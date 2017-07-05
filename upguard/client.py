@@ -3,6 +3,7 @@ import re
 import ssl
 import json
 from upguard.environment import Environment
+from upguard.nodegroup import NodeGroup
 
 class Client(object):
     def __init__(self, url, api_key, secret_key, insecure=False):
@@ -51,3 +52,10 @@ class Client(object):
         """
         status, data = self._call(method="GET", endpoint="/api/v2/environments.json")
         return [Environment(client=self, json=obj) for obj in data]
+
+    def node_groups(self):
+        """
+        Return a list of Node Groups
+        """
+        status, data = self._call(method="GET", endpoint="/api/v2/node_groups.json")
+        return [NodeGroup(client=self, json=obj) for obj in data]
