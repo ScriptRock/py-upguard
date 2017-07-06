@@ -5,6 +5,7 @@ import json
 from upguard.environment import Environment
 from upguard.nodegroup import NodeGroup
 from upguard.osfamily import OSFamily
+from upguard.ostype import OSType
 
 class Client(object):
     def __init__(self, url, api_key, secret_key, insecure=False):
@@ -67,3 +68,10 @@ class Client(object):
         """
         status, data = self._call(method="GET", endpoint="/api/v2/operating_system_families.json")
         return [OSFamily(client=self, json=obj) for obj in data]
+
+    def os_types(self):
+        """
+        Return a list of OS Types
+        """
+        status, data = self._call(method="GET", endpoint="/api/v2/operating_systems.json")
+        return [OSType(client=self, json=obj) for obj in data]
