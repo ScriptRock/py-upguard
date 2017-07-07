@@ -6,6 +6,7 @@ from upguard.environment import Environment
 from upguard.nodegroup import NodeGroup
 from upguard.osfamily import OSFamily
 from upguard.ostype import OSType
+from upguard.job import Job, JobSource
 
 class Client(object):
     def __init__(self, url, api_key, secret_key, insecure=False):
@@ -29,6 +30,7 @@ class Client(object):
                 "{}{}".format(self.url, endpoint),
                 body,
                 {"Authorization": "Token token=\"{}{}\"".format(self.api_key, self.secret_key),
+                "Content-Type": "application/json",
                 "Accept": "application/json"})
             response = self.browser.getresponse()
             data = response.read()
@@ -75,3 +77,17 @@ class Client(object):
         """
         status, data = self._call(method="GET", endpoint="/api/v2/operating_systems.json")
         return [OSType(client=self, json=obj) for obj in data]
+
+    def jobs(self):
+        """
+        Return a list of jobs
+        """
+        status, data = self._call(method="GET", endpoint="/api/v2/jobs.json")
+        return [Job(client=self, json=obj) for obj in data]
+
+    def job(self, id):
+        """
+        Return a single job by ID
+        """
+        status, data = self._call(method="GET", endpoint="/api/v2/jobs/{}.json".format(id))
+        return Job(client=self, json=data)
