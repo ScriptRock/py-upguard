@@ -5,5 +5,5 @@ class Node(UpGuardObject):
         return "Node {} (ID: {})".format(self.name, self.id)
 
     def find(self, id):
-        status, data = self.client._call(method="GET", endpoint="/api/v2/nodes/{}.json".format(id))
-        return Node(client=self.client, json=data)
+        response = self.client._get("/api/v2/nodes/{}.json".format(id))
+        return Node(client=self.client, json=response.json())

@@ -36,7 +36,9 @@ setup(
     ],
     keywords='python upguard api',
     packages=find_packages(),
-    install_requires=[],
+    install_requires=[
+        'requests',
+    ],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['coverage'],
