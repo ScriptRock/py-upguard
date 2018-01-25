@@ -10,22 +10,16 @@ from upguard.job import Job, JobSource
 
 class Client(object):
     def __init__(self, url, api_key, secret_key, insecure=False):
+        self.session = requests.Session()
+        self.session.headers.update({"Authorization": "Token token=\"{}{}\"".format(api_key, secret_key)})
+        if insecure:
+            requests.packages.urllib3.disable_warnings()
         self.url = url
-        self.api_key = api_key
-        self.secret_key = secret_key
-        self.verify = (not insecure)
-        self.headers = {
-            "Authorization": "Token token=\"{}{}\"".format(self.api_key, self.secret_key)
-        }
         if 'http' in self.url:
             # URL needs to be a hostname, so remove 'https://'
             self.url = re.sub('https?:\/\/', '', url)
         else:
             self.url = "https://{}".format(self.url)
-        # self.browser = httplib.HTTPSConnection(url)
-        # if insecure:
-        #     context = ssl._create_unverified_context()
-        #     self.browser = httplib.HTTPSConnection(url, context=context)
 
     def _get(self, endpoint, paginate=False):
         if paginate:
@@ -33,16 +27,15 @@ class Client(object):
             page = 1
             per_page = 50
             while True:
-                new = requests.get(
+                new = self.session.get(
                     "{}{}".format(self.url, endpoint),
-                    headers=self.headers,
-                    verify=self.verify,
                     params={"page": page, "per_page": per_page}).json()
                 result += new
                 page += 1
                 if len(new) < per_page:
                     break
-        return requests.get("{}{}".format(self.url, endpoint), headers=self.headers, verify=self.verify).json()
+        return self.session.get(
+            "{}{}".format(self.url, endpoint)).json()
 
     def environments(self):
         """
