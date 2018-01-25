@@ -7,4 +7,4 @@ class OSFamily(UpGuardObject):
 
     def os_types(self):
         response = self.client._get("/api/v2/operating_systems.json")
-        return [OSType(client=self, json=obj) for obj in response.json() if obj["operating_system_family_id"] == self.id]
+        return [OSType(client=self, json=obj) for obj in response if obj["operating_system_family_id"] == self.id]

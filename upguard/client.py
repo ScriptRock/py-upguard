@@ -27,47 +27,61 @@ class Client(object):
         #     context = ssl._create_unverified_context()
         #     self.browser = httplib.HTTPSConnection(url, context=context)
 
-    def _get(self, endpoint):
-        return requests.get("{}{}".format(self.url, endpoint), headers=self.headers, verify=self.verify)
+    def _get(self, endpoint, paginate=False):
+        if paginate:
+            result = []
+            page = 1
+            per_page = 50
+            while True:
+                new = requests.get(
+                    "{}{}".format(self.url, endpoint),
+                    headers=self.headers,
+                    verify=self.verify,
+                    params={"page": page, "per_page": per_page}).json()
+                result += new
+                page += 1
+                if len(new) < per_page:
+                    break
+        return requests.get("{}{}".format(self.url, endpoint), headers=self.headers, verify=self.verify).json()
 
     def environments(self):
         """
         Return a list of environments
         """
-        response = self._get("/api/v2/environments.json")
-        return [Environment(client=self, json=obj) for obj in response.json()]
+        response = self._get("/api/v2/environments.json", paginate=True)
+        return [Environment(client=self, json=obj) for obj in response]
 
     def node_groups(self):
         """
         Return a list of Node Groups
         """
-        response = self._get("/api/v2/node_groups.json")
-        return [NodeGroup(client=self, json=obj) for obj in response.json()]
+        response = self._get("/api/v2/node_groups.json", paginate=True)
+        return [NodeGroup(client=self, json=obj) for obj in response]
 
     def os_families(self):
         """
         Return a list of OS Families
         """
         response = self._get("/api/v2/operating_system_families.json")
-        return [OSFamily(client=self, json=obj) for obj in response.json()]
+        return [OSFamily(client=self, json=obj) for obj in response]
 
     def os_types(self):
         """
         Return a list of OS Types
         """
         response = self._get("/api/v2/operating_systems.json")
-        return [OSType(client=self, json=obj) for obj in response.json()]
+        return [OSType(client=self, json=obj) for obj in response]
 
     def jobs(self):
         """
         Return a list of jobs
         """
-        response = self._get("/api/v2/jobs.json")
-        return [Job(client=self, json=obj) for obj in response.json()]
+        response = self._get("/api/v2/jobs.json", paginate=True)
+        return [Job(client=self, json=obj) for obj in response]
 
     def job(self, id):
         """
         Return a single job by ID
         """
         response = self._get("/api/v2/jobs/{}.json".format(id))
-        return Job(client=self, json=response.json())
+        return Job(client=self, json=response)
