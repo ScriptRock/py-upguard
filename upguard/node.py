@@ -6,4 +6,4 @@ class Node(UpGuardObject):
 
     def find(self, id):
         response = self.client._get("/api/v2/nodes/{}.json".format(id))
-        return Node(client=self.client, json=response.json())
+        return Node(client=self.client, json=response)
