@@ -2,7 +2,9 @@ import requests
 import re
 import ssl
 import json
+import datetime
 from upguard.environment import Environment
+from upguard.event import Event
 from upguard.nodegroup import NodeGroup
 from upguard.osfamily import OSFamily
 from upguard.ostype import OSType
@@ -14,6 +16,7 @@ class Client(object):
         self.session.headers.update({"Authorization": "Token token=\"{}{}\"".format(api_key, secret_key)})
         if insecure:
             requests.packages.urllib3.disable_warnings()
+        self.verify = (not insecure)
         self.url = url
         if 'http' in self.url:
             # URL needs to be a hostname, so remove 'https://'
@@ -21,21 +24,26 @@ class Client(object):
         else:
             self.url = "https://{}".format(self.url)
 
-    def _get(self, endpoint, paginate=False):
+    def _get(self, endpoint, paginate=False, params={}):
+        params = params or {}
         if paginate:
             result = []
-            page = 1
-            per_page = 50
+            if "page" not in params: params["page"] = 1
+            if "per_page" not in params: params["per_page"] = 50
             while True:
                 new = self.session.get(
                     "{}{}".format(self.url, endpoint),
-                    params={"page": page, "per_page": per_page}).json()
+                    params=params,
+                    verify=self.verify).json()
                 result += new
-                page += 1
-                if len(new) < per_page:
+                params["page"] += 1
+                if len(new) < params["per_page"]:
                     break
+            return result
         return self.session.get(
-            "{}{}".format(self.url, endpoint)).json()
+            "{}{}".format(self.url, endpoint),
+            params=params,
+            verify=self.verify).json()
 
     def environments(self):
         """
@@ -78,3 +86,17 @@ class Client(object):
         """
         response = self._get("/api/v2/jobs/{}.json".format(id))
         return Job(client=self, json=response)
+
+    def events(self, view_name=None, query=None, since=None, before=None):
+        """
+        Return a list of events.
+
+        Optionally provide a datetime object `since` to only return events from a certain time
+        """
+        params={}
+        if view_name: params["view_name"] = view_name
+        if query: params["query"] = query
+        if since: params["start"] = since.strftime("%Y-%m-%d")
+        if before: params["end"] = before.strftime("%Y-%m-%d")
+        response = self._get("/api/v2/events.json", paginate=True, params=params)
+        return [Event(client=self, json=obj) for obj in response]
