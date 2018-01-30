@@ -3,8 +3,10 @@ import re
 import ssl
 import json
 import datetime
+from upguard.connectionmanager import ConnectionManagerGroup, ConnectionManager
 from upguard.environment import Environment
 from upguard.event import Event
+from upguard.node import Node
 from upguard.nodegroup import NodeGroup
 from upguard.osfamily import OSFamily
 from upguard.ostype import OSType
@@ -59,6 +61,19 @@ class Client(object):
         response = self._get("/api/v2/node_groups.json", paginate=True)
         return [NodeGroup(client=self, json=obj) for obj in response]
 
+    def nodes(self, details=False):
+        """
+        Return a list of Nodes
+        """
+        response = self._get("/api/v2/nodes.json", paginate=True)
+        nodes = [Node(client=self, json=obj) for obj in response]
+        if details:
+            detailed_nodes = []
+            for node in nodes:
+                detailed_nodes.append(Node(client=self, json=self._get("/api/v2/nodes/{}.json".format(node.id))))
+            return detailed_nodes
+        return nodes
+
     def os_families(self):
         """
         Return a list of OS Families
@@ -100,3 +115,10 @@ class Client(object):
         if before: params["end"] = before.strftime("%Y-%m-%d")
         response = self._get("/api/v2/events.json", paginate=True, params=params)
         return [Event(client=self, json=obj) for obj in response]
+
+    def connection_manager_groups(self):
+        """
+        Return a list of connection manager groups.
+        """
+        response = self._get("/api/v2/connection_manager_groups.json", paginate=False)
+        return [ConnectionManagerGroup(client=self, json=obj) for obj in response]

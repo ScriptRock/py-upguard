@@ -12,6 +12,7 @@ class UpGuardObject(object):
             setattr(self, property, value)
 
 from upguard.client import *
+from upguard.connectionmanager import *
 from upguard.environment import *
 from upguard.event import *
 from upguard.node import *
