@@ -4,6 +4,7 @@ import ssl
 import json
 import datetime
 from upguard.connectionmanager import ConnectionManagerGroup, ConnectionManager
+from upguard.diff import Diff
 from upguard.environment import Environment
 from upguard.event import Event
 from upguard.node import Node
@@ -33,6 +34,8 @@ class Client(object):
             if "page" not in params: params["page"] = 1
             if "per_page" not in params: params["per_page"] = 50
             while True:
+                # print endpoint
+                # print params
                 new = self.session.get(
                     "{}{}".format(self.url, endpoint),
                     params=params,
@@ -122,3 +125,22 @@ class Client(object):
         """
         response = self._get("/api/v2/connection_manager_groups.json", paginate=False)
         return [ConnectionManagerGroup(client=self, json=obj) for obj in response]
+
+    def diffs(self, environment=None, node_group=None, node=None, date_from=None, date_to=None, include_ignored=False):
+        """
+        Return a list of diffs from an environment, node group, or node over a time period.
+
+        Required:
+        * An Environment, NodeGroup, or Node object
+
+        Optional:
+        * A datetime object for date_from and date_to
+        """
+        params={}
+        if environment: params["environment_id"] = environment.id
+        if node_group: params["node_group_id"] = node_group.id
+        if node: params["node_id"] = node.id
+        if date_from: params["date_from"] = date_from.strftime("%Y-%m-%d")
+        if date_to: params["date_to"] = date_to.strftime("%Y-%m-%d")
+        response = self._get("/api/v2/diffs.json", paginate=False, params=params)
+        return Diff(client=self, json=response)
