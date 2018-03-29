@@ -19,4 +19,5 @@ from upguard.node import *
 from upguard.nodegroup import *
 from upguard.osfamily import *
 from upguard.ostype import *
+from upguard.organization import *
 from upguard.job import *

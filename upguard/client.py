@@ -3,6 +3,7 @@ import re
 import ssl
 import json
 import datetime
+from upguard.organization import Organization
 from upguard.connectionmanager import ConnectionManagerGroup, ConnectionManager
 from upguard.environment import Environment
 from upguard.event import Event
@@ -46,6 +47,22 @@ class Client(object):
             "{}{}".format(self.url, endpoint),
             params=params,
             verify=self.verify).json()
+
+    def organizations(self, user):
+        """
+        Return a list of organizations for the given user
+        """
+        params={}
+        if isinstance(user, int):
+            params["user_id"] = user
+        response = self._get("/api/v2/accounts.json", paginate=False, params=params)
+        return [Organization(client=self, json=obj) for obj in response]
+
+    def organisations(self, user):
+        """
+        Alias for organizations
+        """
+        self.organizations(user)
 
     def environments(self):
         """
