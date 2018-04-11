@@ -3,11 +3,13 @@ import re
 import ssl
 import json
 import datetime
+from numbers import Number
 from upguard.organization import Organization
 from upguard.connectionmanager import ConnectionManagerGroup, ConnectionManager
 from upguard.environment import Environment
 from upguard.event import Event
 from upguard.node import Node
+from upguard.nodescan import NodeScan
 from upguard.nodegroup import NodeGroup
 from upguard.osfamily import OSFamily
 from upguard.ostype import OSType
@@ -125,7 +127,7 @@ class Client(object):
 
         Optionally provide a datetime object `since` to only return events from a certain time
         """
-        params={}
+        params = {}
         if view_name: params["view_name"] = view_name
         if query: params["query"] = query
         if since: params["start"] = since.strftime("%Y-%m-%d")
@@ -139,3 +141,20 @@ class Client(object):
         """
         response = self._get("/api/v2/connection_manager_groups.json", paginate=False)
         return [ConnectionManagerGroup(client=self, json=obj) for obj in response]
+
+    def node_scans(self, node):
+        """
+        Return a list of node scans
+        """
+        params = {}
+        if isinstance(node, Number):
+            params["node_id"] = node
+        response = self._get("/api/v2/node_scans.json", params=params, paginate=True)
+        return [NodeScan(client=self, json=obj) for obj in response]
+
+    def node_scan(self, id):
+        """
+        Return a single node scan by ID
+        """
+        response = self._get("/api/v2/node_scans/{}.json".format(id))
+        return NodeScan(client=self, json=response)
