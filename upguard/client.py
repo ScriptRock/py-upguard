@@ -14,6 +14,7 @@ from upguard.nodegroup import NodeGroup
 from upguard.osfamily import OSFamily
 from upguard.ostype import OSType
 from upguard.job import Job, JobSource
+from upguard.policy import Policy
 
 class Client(object):
     def __init__(self, url, api_key, secret_key, insecure=False):
@@ -158,3 +159,17 @@ class Client(object):
         """
         response = self._get("/api/v2/node_scans/{}.json".format(id))
         return NodeScan(client=self, json=response)
+
+    def policies(self):
+        """
+        Return a list of policies
+        """
+        response = self._get("/api/v2/policies.json", paginate=True)
+        return [Policy(client=self, json=obj) for obj in response]
+
+    def policy(self, id):
+        """
+        Return a single policy by ID
+        """
+        response = self._get("/api/v2/policies/{}.json".format(id))
+        return Policy(client=self, json=response)

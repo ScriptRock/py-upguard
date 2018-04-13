@@ -22,3 +22,4 @@ from upguard.osfamily import *
 from upguard.ostype import *
 from upguard.organization import *
 from upguard.job import *
+from upguard.policy import *
